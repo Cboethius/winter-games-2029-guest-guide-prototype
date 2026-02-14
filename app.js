@@ -1069,7 +1069,6 @@ function render() {
           if (first) track.appendChild(first);
         }
 
-        track.style.width = `${slideCount * 100}%`;
         track.style.transition = "none";
         track.style.transform = "translateX(0)";
 

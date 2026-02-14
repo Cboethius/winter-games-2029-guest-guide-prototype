@@ -247,12 +247,12 @@ a {
 
 .winnersTrack {
   display: flex;
+  width: 100%;
   transform: translateX(0);
   transition: none;
 }
 
 .winnersSlide {
-  width: 100%;
   flex: 0 0 100%;
   padding: 12px;
 }
