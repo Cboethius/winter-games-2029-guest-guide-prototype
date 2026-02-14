@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Winter Games 2029 — Guest Guide (Prototype)</title>
+    <meta
+      name="description"
+      content="Prototype guest guide for Special Olympics World Winter Games 2029 (Switzerland): locations, schedule, map, activities, emergency."
+    />
+    <link rel="icon" href="./assets/switzerland-2029-logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <button class="skipLink" type="button" data-skip-to="app">Skip to content</button>
+
+    <main id="app" class="app" role="main" aria-label="Winter Games guest guide">
+      <div class="wrap">
+        <section class="hero" aria-label="Loading">
+          <h1>Loading…</h1>
+          <p>
+            If you only see the blue background, the JavaScript didn’t run or crashed.
+            <br />
+            Open your browser DevTools → Console to see the exact error.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <noscript>
+      <div class="noscript">
+        This prototype needs JavaScript enabled.
+      </div>
+    </noscript>
+
+    <script defer src="./data.js"></script>
+    <script defer src="./app.js"></script>
+  </body>
+</html>

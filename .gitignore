@@ -1,0 +1,20 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Env files (just in case)
+.env
+.env.*
+
+# Build artifacts (not used, but safe defaults)
+dist/
+build/
+node_modules/
+
