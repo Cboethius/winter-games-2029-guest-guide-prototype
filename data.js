@@ -147,7 +147,95 @@ const TABS = [
   { id: "schedule", label: "Schedule" },
   { id: "map", label: "Map" },
   { id: "activities", label: "Activities" },
+  { id: "athletes", label: "Athletes" },
   { id: "emergency", label: "Emergency" },
+];
+
+/**
+ * Prototype athlete roster (placeholder).
+ * Use fictional sample data for the meeting demo.
+ */
+const ATHLETES = [
+  // Arosa
+  { id: "a1", name: "Lina Meier", country: "Switzerland", sport: "Alpine skiing", locationId: "arosa" },
+  { id: "a2", name: "Mateo Rossi", country: "Italy", sport: "Snowboarding", locationId: "arosa" },
+  { id: "a3", name: "Sofia Novak", country: "Austria", sport: "Alpine skiing", locationId: "arosa" },
+  { id: "a4", name: "Ethan Carter", country: "Canada", sport: "Snowboarding", locationId: "arosa" },
+  { id: "a5", name: "Noor Al‑Hassan", country: "Jordan", sport: "Alpine skiing", locationId: "arosa" },
+  { id: "a6", name: "Mika Tanaka", country: "Japan", sport: "Snowboarding", locationId: "arosa" },
+
+  // Chur
+  { id: "c1", name: "Ava Müller", country: "Germany", sport: "Figure skating", locationId: "chur" },
+  { id: "c2", name: "Lucas Johnson", country: "United States", sport: "Short track", locationId: "chur" },
+  { id: "c3", name: "Nora Schmid", country: "Switzerland", sport: "Floorball", locationId: "chur" },
+  { id: "c4", name: "Benji Kowalski", country: "Poland", sport: "Short track", locationId: "chur" },
+  { id: "c5", name: "Maya Dubois", country: "France", sport: "Figure skating", locationId: "chur" },
+  { id: "c6", name: "Samir Khan", country: "Pakistan", sport: "Floorball", locationId: "chur" },
+
+  // Lenzerheide
+  { id: "l1", name: "Olivia Berg", country: "Norway", sport: "Cross-country skiing", locationId: "lenzerheide" },
+  { id: "l2", name: "Diego Fernández", country: "Spain", sport: "Snowshoeing", locationId: "lenzerheide" },
+  { id: "l3", name: "Chloé Martin", country: "France", sport: "Dance", locationId: "lenzerheide" },
+  { id: "l4", name: "Tomasz Nowak", country: "Czechia", sport: "Cross-country skiing", locationId: "lenzerheide" },
+  { id: "l5", name: "Fatima El Amrani", country: "Morocco", sport: "Snowshoeing", locationId: "lenzerheide" },
+  { id: "l6", name: "Sara Nilsson", country: "Sweden", sport: "Dance", locationId: "lenzerheide" },
+];
+
+/**
+ * Disability information (prototype, educational).
+ * Notes:
+ * - This is not a diagnosis tool.
+ * - People and support needs vary widely.
+ */
+const DISABILITIES = [
+  {
+    id: "intellectual_disability",
+    name: "Intellectual disability",
+    summary: "A disability that can affect learning, reasoning, and everyday adaptive skills.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Intellectual_disability",
+  },
+  {
+    id: "autism",
+    name: "Autism (Autism Spectrum Disorder)",
+    summary: "A neurodevelopmental condition that can affect communication, social interaction, and sensory processing.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Autism",
+  },
+  {
+    id: "down_syndrome",
+    name: "Down syndrome",
+    summary: "A genetic condition associated with extra chromosome 21 and a range of developmental and health differences.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Down_syndrome",
+  },
+  {
+    id: "cerebral_palsy",
+    name: "Cerebral palsy",
+    summary: "A group of disorders affecting movement and posture due to non-progressive brain development differences.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Cerebral_palsy",
+  },
+  {
+    id: "vision_impairment",
+    name: "Vision impairment",
+    summary: "Reduced vision that can’t be fully corrected with glasses, affecting navigation and reading visual cues.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Visual_impairment",
+  },
+  {
+    id: "hearing_impairment",
+    name: "Hearing impairment",
+    summary: "Partial or total hearing loss that can affect communication and access to announcements.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Hearing_loss",
+  },
+  {
+    id: "physical_disability",
+    name: "Physical disability (mobility/coordination)",
+    summary: "A broad category covering mobility, strength, coordination, or endurance differences.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Physical_disability",
+  },
+  {
+    id: "multiple_disabilities",
+    name: "Multiple disabilities",
+    summary: "When a person has more than one disability and may need combined supports and accessible design.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Multiple_disabilities",
+  },
 ];
 
 const EMERGENCY_CONTACTS = [
@@ -235,6 +323,8 @@ window.WS2029_DATA = {
   EVENT,
   LOCATIONS,
   TABS,
+  ATHLETES,
+  DISABILITIES,
   EMERGENCY_CONTACTS,
   SCHEDULE_DAYS,
 };

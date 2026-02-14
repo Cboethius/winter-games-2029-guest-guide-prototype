@@ -42,7 +42,19 @@ const fallbackData = {
     { id: "schedule", label: "Schedule" },
     { id: "map", label: "Map" },
     { id: "activities", label: "Activities" },
+    { id: "athletes", label: "Athletes" },
     { id: "emergency", label: "Emergency" },
+  ],
+  ATHLETES: [
+    { id: "a1", name: "Lina Meier", country: "Switzerland", sport: "Alpine skiing", locationId: "arosa" },
+  ],
+  DISABILITIES: [
+    {
+      id: "intellectual_disability",
+      name: "Intellectual disability",
+      summary: "A disability that can affect learning, reasoning, and everyday adaptive skills.",
+      learnMoreUrl: "https://en.wikipedia.org/wiki/Intellectual_disability",
+    },
   ],
   EMERGENCY_CONTACTS: [
     { label: "Emergency (EU)", number: "112", note: "Any emergency (if unsure, call this)." },
@@ -53,9 +65,12 @@ const fallbackData = {
 };
 
 const data = window.WS2029_DATA || fallbackData;
-const { EMERGENCY_CONTACTS, EVENT, LOCATIONS, SOURCE, SCHEDULE_DAYS, TABS } = data;
+const { ATHLETES, DISABILITIES, EMERGENCY_CONTACTS, EVENT, LOCATIONS, SOURCE, SCHEDULE_DAYS, TABS } = data;
 
 const STORAGE_KEY = "ws2029.selectedLocationId";
+let menuOpen = false;
+let winnersIndex = 0;
+let winnersTimer = null;
 
 function $(sel, root = document) {
   return root.querySelector(sel);
@@ -112,6 +127,12 @@ function navTo(path) {
 function icon(name) {
   // Tiny inline SVG icons, avoiding external dependencies.
   const common = 'width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"';
+  if (name === "menu") {
+    return `<svg ${common}><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+  }
+  if (name === "medal") {
+    return `<svg ${common}><path d="M8 2h8l-2 6H10L8 2Z" fill="currentColor" opacity="0.25"/><path d="M10 8h4l2 4-4 10-4-10 2-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="14" r="3" stroke="currentColor" stroke-width="2"/></svg>`;
+  }
   if (name === "pin") {
     return `<svg ${common}><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="2"/></svg>`;
   }
@@ -124,16 +145,92 @@ function icon(name) {
   return "";
 }
 
-function renderTopbar({ selectedLocationId }) {
+function initials(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/g)
+    .filter(Boolean);
+  const a = parts[0]?.[0] || "?";
+  const b = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (a + b).toUpperCase();
+}
+
+function avatarGradient(seed) {
+  const s = String(seed || "");
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  const palette = ["--accentPurple", "--accentBlue", "--accentRed"];
+  const a = palette[h % palette.length];
+  const b = palette[(h + 1) % palette.length];
+  return `linear-gradient(135deg, var(${a}), var(${b}))`;
+}
+
+function renderMenu({ mode, selectedLocationId, activeTab }) {
+  const loc = selectedLocationId ? LOCATIONS.find((l) => l.id === selectedLocationId) : null;
+
+  const locationLinks =
+    loc &&
+    TABS.filter((t) => t.id !== "emergency").map((t) => {
+      const href = `#/location/${encodeURIComponent(loc.id)}?tab=${encodeURIComponent(t.id)}`;
+      const isActive = t.id === activeTab;
+      return `
+        <a class="menuItem ${isActive ? "isActive" : ""}" href="${escapeHtml(href)}">
+          ${escapeHtml(t.label)}
+        </a>
+      `;
+    }).join("");
+
+  const quickLinks = `
+    <a class="menuItem" href="#/">Home</a>
+    <a class="menuItem" href="#/program">Program</a>
+    <a class="menuItem" href="#/athletes">All Athletes</a>
+    <a class="menuItem" href="#/disabilities">Disabilities</a>
+    <a class="menuItem" href="#/?focus=map">Map</a>
+  `;
+
+  const header = loc
+    ? `<div class="menuTitle">Menu • ${escapeHtml(loc.name)}</div>`
+    : `<div class="menuTitle">Menu</div>`;
+
+  const sub = loc
+    ? `<div class="menuSub">Choose a category for this location.</div>`
+    : `<div class="menuSub">Pick a location to unlock location categories.</div>`;
+
+  return `
+    <div class="menuOverlay" data-action="closeMenu" aria-hidden="true"></div>
+    <nav class="menuPanel" aria-label="Menu">
+      ${header}
+      ${sub}
+      <div class="menuSection" aria-label="Quick links">
+        ${quickLinks}
+      </div>
+      ${
+        loc
+          ? `<div class="menuSection" aria-label="Location categories">
+              ${locationLinks}
+            </div>
+            <div class="menuSection" aria-label="Location actions">
+              <a class="menuItem" href="#/">Change location</a>
+            </div>`
+          : ""
+      }
+      <div class="menuSection" aria-label="Close">
+        <button class="menuCloseBtn" type="button" data-action="closeMenu">Close</button>
+      </div>
+    </nav>
+  `;
+}
+
+function renderTopbar({ mode, selectedLocationId, activeTab }) {
   const locationLabel = selectedLocationId ? ` • ${formatLocationName(selectedLocationId)}` : "";
   const subtitle = `${EVENT.dates.display} • Prototype`;
 
   return `
     <div class="topbar" role="banner" aria-label="Header">
       <div class="brand">
-        <div class="brandLogo" aria-hidden="true">
-          <img src="./assets/switzerland-2029-logo.svg" alt="" />
-        </div>
+        <a class="brandLogo" href="#/" aria-label="Go to home">
+          <img src="./assets/switzerland-2029-logo.svg" alt="Switzerland 2029" />
+        </a>
         <div class="brandText">
           <div class="brandTitle">${escapeHtml(EVENT.name)}${escapeHtml(locationLabel)}</div>
           <div class="brandSubtitle">${escapeHtml(subtitle)}</div>
@@ -141,17 +238,26 @@ function renderTopbar({ selectedLocationId }) {
       </div>
 
       <div class="actions" aria-label="Quick actions">
+        <button
+          class="btn"
+          type="button"
+          data-action="toggleMenu"
+          aria-label="Open menu"
+          aria-expanded="${menuOpen ? "true" : "false"}"
+          aria-controls="appMenu"
+        >
+          ${icon("menu")} Menu
+        </button>
         <button class="btn btnDanger" type="button" data-action="emergency" aria-label="Emergency">
           ${icon("alert")} Emergency
         </button>
-        <button class="btn" type="button" data-action="today" aria-label="Program (schedule)">
-          ${icon("clock")} Program
-        </button>
-        <button class="btn" type="button" data-action="map" aria-label="Map">
-          ${icon("pin")} Map
-        </button>
       </div>
     </div>
+    ${
+      menuOpen
+        ? `<div id="appMenu">${renderMenu({ mode, selectedLocationId, activeTab })}</div>`
+        : `<div id="appMenu" hidden></div>`
+    }
   `;
 }
 
@@ -160,7 +266,7 @@ function renderHome({ selectedLocationId, focus }) {
     ? `Last used: <strong>${escapeHtml(formatLocationName(selectedLocationId))}</strong>.`
     : "Choose your location to get a quick overview.";
 
-  const cards = LOCATIONS.map((loc) => {
+  const locationCards = LOCATIONS.map((loc) => {
     return `
       <article class="card" aria-label="${escapeHtml(loc.name)} card">
         <div class="cardBody">
@@ -182,6 +288,77 @@ function renderHome({ selectedLocationId, focus }) {
     `;
   }).join("");
 
+  const programCard = `
+    <article class="card" aria-label="Program card">
+      <div class="cardBody">
+        <div class="cardTitle">
+          <h2>Program</h2>
+          <span class="badge">${escapeHtml(EVENT.dates.display)}</span>
+        </div>
+        <ul class="list">
+          <li>Day-by-day timeline</li>
+          <li>Key moments (placeholder)</li>
+          <li>Quick overview for guests</li>
+        </ul>
+        <p class="hint">See what’s happening across all locations (prototype schedule).</p>
+        <div class="section">
+          <a class="btn btnPrimary" href="#/program" aria-label="Open program">
+            ${icon("clock")} Open Program
+          </a>
+        </div>
+      </div>
+    </article>
+  `;
+
+  const allAthletesCount = (ATHLETES || []).length;
+  const disciplineCount = new Set((ATHLETES || []).map((a) => a.sport)).size;
+
+  const allAthletesCard = `
+    <article class="card" aria-label="All athletes card">
+      <div class="cardBody">
+        <div class="cardTitle">
+          <h2>All Athletes</h2>
+          <span class="badge">${escapeHtml(String(allAthletesCount))} athletes</span>
+        </div>
+        <ul class="list">
+          <li>All locations</li>
+          <li>All disciplines (${escapeHtml(String(disciplineCount))})</li>
+          <li>Quick roster overview</li>
+        </ul>
+        <p class="hint">See every athlete and what discipline they compete in (prototype roster).</p>
+        <div class="section">
+          <a class="btn btnPrimary" href="#/athletes" aria-label="Open all athletes">
+            Open Athletes
+          </a>
+        </div>
+      </div>
+    </article>
+  `;
+
+  const disabilitiesCard = `
+    <article class="card" aria-label="Disabilities card">
+      <div class="cardBody">
+        <div class="cardTitle">
+          <h2>Disabilities</h2>
+          <span class="badge">Learn</span>
+        </div>
+        <ul class="list">
+          <li>Types of disabilities (examples)</li>
+          <li>What they can mean</li>
+          <li>Links to learn more</li>
+        </ul>
+        <p class="hint">A quick educational overview (prototype).</p>
+        <div class="section">
+          <a class="btn btnPrimary" href="#/disabilities" aria-label="Open disabilities overview">
+            Open Disabilities
+          </a>
+        </div>
+      </div>
+    </article>
+  `;
+
+  const cards = locationCards + programCard + allAthletesCard + disabilitiesCard;
+
   const focusBlock = (() => {
     if (focus === "emergency") return renderEmergencyPanel({ compact: true });
     if (focus === "schedule")
@@ -191,9 +368,66 @@ function renderHome({ selectedLocationId, focus }) {
     return "";
   })();
 
+  const winnersSlider = `
+    <section class="winners" aria-label="Live medal highlights (prototype)">
+      <div class="winnersHeader">
+        <strong>Live medalists</strong>
+        <span class="badge">Prototype</span>
+      </div>
+      <div class="winnersViewport" aria-label="Medalist slider">
+        <div class="winnersTrack" data-winners-track>
+          <div class="winnersSlide">
+            <div class="winnerCard winnerGold">
+              <img class="winnerImg" src="./assets/athlete-placeholder.svg" alt="Athlete photo placeholder" />
+              <div class="winnerMeta">
+                <div class="winnerTop">
+                  <span class="winnerMedal">Gold</span>
+                  <span class="winnerIcon" aria-hidden="true">${icon("medal")}</span>
+                </div>
+                <div class="winnerName">Alex Winter</div>
+                <div class="winnerSub">Alpine skiing • Switzerland (placeholder)</div>
+              </div>
+            </div>
+          </div>
+          <div class="winnersSlide">
+            <div class="winnerCard winnerSilver">
+              <img class="winnerImg" src="./assets/athlete-placeholder.svg" alt="Athlete photo placeholder" />
+              <div class="winnerMeta">
+                <div class="winnerTop">
+                  <span class="winnerMedal">Silver</span>
+                  <span class="winnerIcon" aria-hidden="true">${icon("medal")}</span>
+                </div>
+                <div class="winnerName">Jamie Frost</div>
+                <div class="winnerSub">Short track • Canada (placeholder)</div>
+              </div>
+            </div>
+          </div>
+          <div class="winnersSlide">
+            <div class="winnerCard winnerBronze">
+              <img class="winnerImg" src="./assets/athlete-placeholder.svg" alt="Athlete photo placeholder" />
+              <div class="winnerMeta">
+                <div class="winnerTop">
+                  <span class="winnerMedal">Bronze</span>
+                  <span class="winnerIcon" aria-hidden="true">${icon("medal")}</span>
+                </div>
+                <div class="winnerName">Sam Glacier</div>
+                <div class="winnerSub">Cross-country skiing • Sweden (placeholder)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="winnersDots" aria-label="Slider position (decorative)">
+        <span class="dot" data-winners-dot="0" aria-hidden="true"></span>
+        <span class="dot" data-winners-dot="1" aria-hidden="true"></span>
+        <span class="dot" data-winners-dot="2" aria-hidden="true"></span>
+      </div>
+    </section>
+  `;
+
   return `
     <div class="wrap">
-      ${renderTopbar({ selectedLocationId })}
+      ${renderTopbar({ mode: "home", selectedLocationId, activeTab: null })}
 
       <section class="hero" aria-label="Welcome">
         <h1>Guest Guide Prototype</h1>
@@ -214,6 +448,8 @@ function renderHome({ selectedLocationId, focus }) {
         </p>
       </section>
 
+      ${winnersSlider}
+
       <section class="grid" aria-label="Locations">
         ${cards}
       </section>
@@ -223,10 +459,169 @@ function renderHome({ selectedLocationId, focus }) {
   `;
 }
 
+function renderProgram({ selectedLocationId }) {
+  return `
+    <div class="wrap">
+      ${renderTopbar({ mode: "program", selectedLocationId, activeTab: "schedule" })}
+
+      <section class="hero" aria-label="Program header">
+        <h1>Program</h1>
+        <p>
+          A simple day-by-day timeline for the meeting demo (placeholders).
+          <br />
+          <strong>Dates:</strong> ${escapeHtml(EVENT.dates.display)}.
+        </p>
+        <div class="section">
+          <a class="btn" href="#/">Back to locations</a>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Program timeline">
+        <div class="card">
+          <div class="cardBody">
+            ${renderSchedulePanel({ compact: false })}
+          </div>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderAllAthletes({ selectedLocationId, sportFilter }) {
+  const roster = (ATHLETES || []).slice();
+  const sports = Array.from(new Set(roster.map((a) => a.sport))).sort((a, b) => a.localeCompare(b));
+
+  const filtered = sportFilter ? roster.filter((a) => a.sport === sportFilter) : roster;
+
+  const filterPills = [
+    `<a class="pill ${sportFilter ? "" : "pillSoft"}" href="#/athletes" aria-label="Show all disciplines">All</a>`,
+    ...sports.map((s) => {
+      const href = `#/athletes?sport=${encodeURIComponent(s)}`;
+      const active = s === sportFilter;
+      return `<a class="pill ${active ? "pillSoft" : ""}" href="${escapeHtml(href)}">${escapeHtml(s)}</a>`;
+    }),
+  ].join(" ");
+
+  const cards = filtered
+    .map((a) => {
+      const locName = formatLocationName(a.locationId);
+      return `
+        <article class="athleteCard" aria-label="${escapeHtml(a.name)} athlete">
+          <div class="athleteRow">
+            <div class="avatar" aria-hidden="true" style="background:${escapeHtml(avatarGradient(a.name))}">
+              ${escapeHtml(initials(a.name))}
+            </div>
+            <div class="athleteMeta">
+              <div class="athleteName">${escapeHtml(a.name)}</div>
+              <div class="athleteSub">
+                <span class="pill">${escapeHtml(a.country)}</span>
+                <span class="pill pillSoft">${escapeHtml(a.sport)}</span>
+                <span class="pill">${escapeHtml(locName)}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="wrap">
+      ${renderTopbar({ mode: "athletes", selectedLocationId, activeTab: null })}
+
+      <section class="hero" aria-label="All athletes header">
+        <h1>All Athletes</h1>
+        <p>
+          Full roster across all locations and disciplines (prototype placeholders).
+          <br />
+          <strong>${escapeHtml(String(filtered.length))}</strong> shown${sportFilter ? ` for <strong>${escapeHtml(sportFilter)}</strong>` : ""}.
+        </p>
+        <div class="section">
+          <a class="btn" href="#/">Back to locations</a>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Discipline filters">
+        <div class="card">
+          <div class="cardBody">
+            <div class="callout">
+              <strong>Filter by discipline</strong>
+              <div class="footerNote">Tap a discipline to filter the roster.</div>
+            </div>
+            <div class="section" style="display:flex; flex-wrap:wrap; gap:8px;">
+              ${filterPills}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Athlete roster">
+        <div class="athleteGrid">
+          ${cards || `<div class="callout">No athletes match this filter (prototype).</div>`}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderDisabilities({ selectedLocationId }) {
+  const items = (DISABILITIES || []).map((d) => {
+    return `
+      <details class="disabilityItem" id="${escapeHtml(d.id)}">
+        <summary class="disabilitySummary">
+          <span>${escapeHtml(d.name)}</span>
+          <span class="badge">Info</span>
+        </summary>
+        <div class="disabilityBody">
+          <p class="hint" style="margin:10px 0 0;">${escapeHtml(d.summary)}</p>
+          <div class="section" style="margin-top:12px;">
+            <a class="btn" href="${escapeHtml(d.learnMoreUrl)}" target="_blank" rel="noreferrer">
+              Learn more
+            </a>
+          </div>
+        </div>
+      </details>
+    `;
+  }).join("");
+
+  return `
+    <div class="wrap">
+      ${renderTopbar({ mode: "disabilities", selectedLocationId, activeTab: null })}
+
+      <section class="hero" aria-label="Disabilities header">
+        <h1>Disabilities (examples)</h1>
+        <p>
+          Educational overview for the meeting prototype.
+          <br />
+          <span class="muted">Not everyone is the same, and support needs differ person to person.</span>
+        </p>
+        <div class="section">
+          <a class="btn" href="#/">Back to locations</a>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Disability list">
+        <div class="card">
+          <div class="cardBody">
+            <div class="callout">
+              <strong>Tap a category</strong>
+              <div class="footerNote">Each item includes a short explanation and an external link.</div>
+            </div>
+            <div class="section">
+              ${items || `<div class="callout">No disability info yet (prototype).</div>`}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
 function renderTabButtons({ selectedTabId }) {
+  const visibleTabs = TABS.filter((t) => t.id !== "emergency");
   return `
     <div class="tabs" role="tablist" aria-label="Location sections">
-      ${TABS.map((t) => {
+      ${visibleTabs.map((t) => {
         const selected = t.id === selectedTabId;
         return `
           <button
@@ -394,6 +789,53 @@ function renderActivitiesPanel(loc) {
   `;
 }
 
+function renderAthletesPanel(loc) {
+  const roster = (ATHLETES || []).filter((a) => a.locationId === loc.id);
+
+  if (!roster.length) {
+    return `
+      <div class="callout">
+        <strong>No athletes listed yet.</strong>
+        <div class="footerNote">Prototype placeholder — add athlete rosters per location.</div>
+      </div>
+    `;
+  }
+
+  const cards = roster
+    .map((a) => {
+      return `
+        <article class="athleteCard" aria-label="${escapeHtml(a.name)} athlete">
+          <div class="athleteRow">
+            <div class="avatar" aria-hidden="true" style="background:${escapeHtml(avatarGradient(a.name))}">
+              ${escapeHtml(initials(a.name))}
+            </div>
+            <div class="athleteMeta">
+              <div class="athleteName">${escapeHtml(a.name)}</div>
+              <div class="athleteSub">
+                <span class="pill">${escapeHtml(a.country)}</span>
+                <span class="pill pillSoft">${escapeHtml(a.sport)}</span>
+              </div>
+            </div>
+          </div>
+          <p class="hint" style="margin-top:10px;">
+            Photo + athlete bio would appear here in the full version (placeholder).
+          </p>
+        </article>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="callout">
+      <strong>Athletes in ${escapeHtml(loc.name)}</strong>
+      <div class="footerNote">Prototype roster (sample names/countries/sports).</div>
+    </div>
+    <div class="athleteGrid" aria-label="Athlete roster">
+      ${cards}
+    </div>
+  `;
+}
+
 function renderEmergencyPanel({ compact }) {
   const rows = EMERGENCY_CONTACTS.map((c) => {
     const num = c.number.replaceAll(" ", "");
@@ -458,13 +900,14 @@ function renderLocation({ locationId, tabId }) {
     if (selectedTab === "schedule") return `<div class="card"><div class="cardBody">${renderSchedulePanel({ compact: false })}</div></div>`;
     if (selectedTab === "map") return renderMapPanel(loc);
     if (selectedTab === "activities") return `<div class="card"><div class="cardBody">${renderActivitiesPanel(loc)}</div></div>`;
+    if (selectedTab === "athletes") return `<div class="card"><div class="cardBody">${renderAthletesPanel(loc)}</div></div>`;
     if (selectedTab === "emergency") return `<div class="card"><div class="cardBody">${renderEmergencyPanel({ compact: false })}</div></div>`;
     return "";
   })();
 
   return `
     <div class="wrap">
-      ${renderTopbar({ selectedLocationId: locationId })}
+      ${renderTopbar({ mode: "location", selectedLocationId: locationId, activeTab: selectedTab })}
 
       <section class="hero" aria-label="Location header">
         <h1>${escapeHtml(loc.name)}</h1>
@@ -504,6 +947,18 @@ function wireEvents(root) {
     const action = el.getAttribute("data-action");
     const pick = el.getAttribute("data-pick-location");
     const tab = el.getAttribute("data-tab");
+
+    if (action === "toggleMenu") {
+      menuOpen = !menuOpen;
+      render();
+      return;
+    }
+
+    if (action === "closeMenu") {
+      menuOpen = false;
+      render();
+      return;
+    }
 
     if (pick) {
       setStoredLocationId(pick);
@@ -552,6 +1007,12 @@ function wireEvents(root) {
   });
 
   root.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && menuOpen) {
+      menuOpen = false;
+      render();
+      return;
+    }
+
     // Simple keyboard support for tabs: left/right to move focus.
     const active = document.activeElement;
     if (!(active instanceof HTMLElement)) return;
@@ -573,14 +1034,92 @@ function render() {
   const root = $("#app");
   if (!root) return;
 
+  document.body.classList.toggle("isMenuOpen", menuOpen);
+  if (winnersTimer) {
+    clearInterval(winnersTimer);
+    winnersTimer = null;
+  }
+
   const selectedLocationId = getStoredLocationId();
   const { path, query } = parseHash();
 
   // Routes:
   // - /                home
   // - /location/:id    location dashboard
+  // - /program         program timeline
+  // - /athletes        all athletes roster
+  // - /disabilities    disabilities overview
   if (path === "/" || path === "") {
     root.innerHTML = renderHome({ selectedLocationId, focus: query.focus || null });
+    const track = root.querySelector("[data-winners-track]");
+    const dots = Array.from(root.querySelectorAll("[data-winners-dot]"));
+    if (track) {
+      const slideCount = track.children.length || 0;
+      const intervalMs = 6000;
+
+      if (slideCount > 0) {
+        const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+        let isAnimating = false;
+
+        winnersIndex = ((winnersIndex % slideCount) + slideCount) % slideCount;
+
+        // Rotate DOM so the "current" slide is first in the track.
+        for (let i = 0; i < winnersIndex; i++) {
+          const first = track.firstElementChild;
+          if (first) track.appendChild(first);
+        }
+
+        track.style.width = `${slideCount * 100}%`;
+        track.style.transition = "none";
+        track.style.transform = "translateX(0)";
+
+        const updateDots = () => {
+          dots.forEach((d, i) => d.classList.toggle("isActive", i === winnersIndex));
+        };
+
+        const finishStep = () => {
+          track.style.transition = "none";
+          const first = track.firstElementChild;
+          if (first) track.appendChild(first);
+          track.style.transform = "translateX(0)";
+          winnersIndex = (winnersIndex + 1) % slideCount;
+          updateDots();
+          isAnimating = false;
+        };
+
+        const step = () => {
+          if (isAnimating) return;
+          isAnimating = true;
+
+          if (prefersReducedMotion) {
+            finishStep();
+            return;
+          }
+
+          track.style.transition = "transform 800ms ease";
+          track.style.transform = "translateX(-100%)";
+          track.addEventListener("transitionend", finishStep, { once: true, passive: true });
+        };
+
+        updateDots();
+        winnersTimer = window.setInterval(step, intervalMs);
+      }
+    }
+    return;
+  }
+
+  if (path === "/program") {
+    root.innerHTML = renderProgram({ selectedLocationId });
+    return;
+  }
+
+  if (path === "/athletes") {
+    root.innerHTML = renderAllAthletes({ selectedLocationId, sportFilter: query.sport || null });
+    return;
+  }
+
+  if (path === "/disabilities") {
+    root.innerHTML = renderDisabilities({ selectedLocationId });
     return;
   }
 
@@ -599,7 +1138,10 @@ function boot() {
   const root = $("#app");
   if (!root) return;
   wireEvents(root);
-  window.addEventListener("hashchange", render);
+  window.addEventListener("hashchange", () => {
+    menuOpen = false;
+    render();
+  });
 
   if (!window.location.hash) {
     window.location.hash = "#/";
