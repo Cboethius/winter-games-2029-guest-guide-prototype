@@ -71,6 +71,8 @@ const STORAGE_KEY = "ws2029.selectedLocationId";
 let menuOpen = false;
 let winnersIndex = 0;
 let winnersTimer = null;
+let heroIndex = 0;
+let heroTimer = null;
 
 function $(sel, root = document) {
   return root.querySelector(sel);
@@ -222,19 +224,12 @@ function renderMenu({ mode, selectedLocationId, activeTab }) {
 }
 
 function renderTopbar({ mode, selectedLocationId, activeTab }) {
-  const locationLabel = selectedLocationId ? ` • ${formatLocationName(selectedLocationId)}` : "";
-  const subtitle = `${EVENT.dates.display} • Prototype`;
-
   return `
     <div class="topbar" role="banner" aria-label="Header">
       <div class="brand">
         <a class="brandLogo" href="#/" aria-label="Go to home">
           <img src="./assets/switzerland-2029-logo.svg" alt="Switzerland 2029" />
         </a>
-        <div class="brandText">
-          <div class="brandTitle">${escapeHtml(EVENT.name)}${escapeHtml(locationLabel)}</div>
-          <div class="brandSubtitle">${escapeHtml(subtitle)}</div>
-        </div>
       </div>
 
       <div class="actions" aria-label="Quick actions">
@@ -425,26 +420,85 @@ function renderHome({ selectedLocationId, focus }) {
     </section>
   `;
 
+  // Hero backgrounds: images from Special Olympics World Winter Games 2029 (switzerland2029.ch)
+  const heroBg1 = 'https://switzerland2029.ch/wp-content/uploads/2025/06/snow-shoeing-low_nicolas-belle-scaled.jpg';
+  const heroBg2 = 'https://switzerland2029.ch/wp-content/uploads/2026/01/titelbild-homepage-einladung.jpg';
+  const heroBg3 = 'https://switzerland2029.ch/wp-content/uploads/2025/11/smswwg29n25-11-1-scaled.jpg';
+
+  const heroSlides = `
+    <div class="heroTrack" data-hero-track aria-label="Guest guide highlights slider">
+      <div class="heroSlide" style="--hero-bg:url('${heroBg1}')">
+        <div class="heroOverlay" aria-hidden="true"></div>
+        <div class="heroContent">
+          <div class="heroKicker">Welcome</div>
+          <h1>Guest Guide Prototype</h1>
+          <p class="heroLead">
+            Quick overview for guests and athletes: location info, program, activities, and emergency access.
+          </p>
+          <div class="heroInfo">
+            <div><strong>Dates:</strong> ${escapeHtml(EVENT.dates.display)}</div>
+            <div class="muted">${selectedHint}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="heroSlide" style="--hero-bg:url('${heroBg2}')">
+        <div class="heroOverlay" aria-hidden="true"></div>
+        <div class="heroContent">
+          <div class="heroKicker">Locations</div>
+          <h1>Chur • Arosa • Lenzerheide</h1>
+          <ul class="heroBullets">
+            <li><strong>Chur</strong>: figure skating, short track, floorball</li>
+            <li><strong>Arosa</strong>: alpine skiing, snowboarding</li>
+            <li><strong>Lenzerheide</strong>: cross-country skiing, snowshoeing, dance</li>
+          </ul>
+          <div class="heroInfo">
+            <div class="muted">Tap a location card below to open its guide.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="heroSlide" style="--hero-bg:url('${heroBg3}')">
+        <div class="heroOverlay" aria-hidden="true"></div>
+        <div class="heroContent">
+          <div class="heroKicker">At a glance</div>
+          <h1>Make info easy to find</h1>
+          <ul class="heroBullets">
+            <li><strong>Program</strong>: timeline of what’s coming up</li>
+            <li><strong>All Athletes</strong>: roster by discipline</li>
+            <li><strong>Disabilities</strong>: educational overview + links</li>
+          </ul>
+          <div class="heroInfo">
+            <div class="muted">Emergency is always available via the top button.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const heroDots = `
+    <div class="heroDots" aria-label="Hero slider position (decorative)">
+      <span class="dot" data-hero-dot="0" aria-hidden="true"></span>
+      <span class="dot" data-hero-dot="1" aria-hidden="true"></span>
+      <span class="dot" data-hero-dot="2" aria-hidden="true"></span>
+    </div>
+  `;
+
   return `
     <div class="wrap">
       ${renderTopbar({ mode: "home", selectedLocationId, activeTab: null })}
 
-      <section class="hero" aria-label="Welcome">
-        <h1>Guest Guide Prototype</h1>
-        <p>
-          ${escapeHtml(EVENT.note)}
-          <br />
-          <strong>Dates:</strong> ${escapeHtml(EVENT.dates.display)}.
-          <br />
-          <span class="muted">${selectedHint}</span>
-        </p>
-        <ul class="list" aria-label="Key facts">
-          ${EVENT.context.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
-        </ul>
-        <p class="footerNote">
+      <section class="heroCarousel" aria-label="Guest guide prototype slider">
+        <div class="heroViewport">
+          ${heroSlides}
+        </div>
+        ${heroDots}
+        <p class="footerNote" style="margin-top: 10px;">
           Source facts: <a href="${escapeHtml(SOURCE.website)}" target="_blank" rel="noreferrer">${escapeHtml(
             SOURCE.website
           )}</a>
+          <br />
+          Images are placeholders — swap in official photos when available.
         </p>
       </section>
 
@@ -1039,6 +1093,10 @@ function render() {
     clearInterval(winnersTimer);
     winnersTimer = null;
   }
+  if (heroTimer) {
+    clearInterval(heroTimer);
+    heroTimer = null;
+  }
 
   const selectedLocationId = getStoredLocationId();
   const { path, query } = parseHash();
@@ -1051,6 +1109,59 @@ function render() {
   // - /disabilities    disabilities overview
   if (path === "/" || path === "") {
     root.innerHTML = renderHome({ selectedLocationId, focus: query.focus || null });
+
+    // Hero slider (top)
+    const heroTrack = root.querySelector("[data-hero-track]");
+    const heroDots = Array.from(root.querySelectorAll("[data-hero-dot]"));
+    if (heroTrack) {
+      const slideCount = heroTrack.children.length || 0;
+      const intervalMs = 7000;
+      const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+      let isAnimating = false;
+
+      heroIndex = ((heroIndex % Math.max(1, slideCount)) + Math.max(1, slideCount)) % Math.max(1, slideCount);
+
+      // Rotate DOM so the "current" slide is first
+      for (let i = 0; i < heroIndex; i++) {
+        const first = heroTrack.firstElementChild;
+        if (first) heroTrack.appendChild(first);
+      }
+
+      heroTrack.style.transition = "none";
+      heroTrack.style.transform = "translateX(0)";
+
+      const updateHeroDots = () => {
+        heroDots.forEach((d, i) => d.classList.toggle("isActive", i === heroIndex));
+      };
+
+      const finishHeroStep = () => {
+        heroTrack.style.transition = "none";
+        const first = heroTrack.firstElementChild;
+        if (first) heroTrack.appendChild(first);
+        heroTrack.style.transform = "translateX(0)";
+        heroIndex = (heroIndex + 1) % slideCount;
+        updateHeroDots();
+        isAnimating = false;
+      };
+
+      const stepHero = () => {
+        if (isAnimating || slideCount <= 1) return;
+        isAnimating = true;
+
+        if (prefersReducedMotion) {
+          finishHeroStep();
+          return;
+        }
+
+        heroTrack.style.transition = "transform 900ms ease";
+        heroTrack.style.transform = "translateX(-100%)";
+        heroTrack.addEventListener("transitionend", finishHeroStep, { once: true, passive: true });
+      };
+
+      updateHeroDots();
+      heroTimer = window.setInterval(stepHero, intervalMs);
+    }
+
     const track = root.querySelector("[data-winners-track]");
     const dots = Array.from(root.querySelectorAll("[data-winners-dot]"));
     if (track) {

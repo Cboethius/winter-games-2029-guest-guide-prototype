@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700" role="img" aria-label="Snow trail placeholder">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f6fbff"/>
+    </linearGradient>
+    <linearGradient id="trail" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ed1b38" stop-opacity="0.18"/>
+      <stop offset="0.5" stop-color="#258cd4" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#633b9f" stop-opacity="0.18"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="700" fill="url(#sky)"/>
+  <path d="M0 510 C 250 470, 420 520, 610 470 C 800 420, 980 480, 1180 430 C 1360 385, 1480 430, 1600 395 L1600 700 L0 700 Z" fill="url(#accent)"/>
+  <path d="M650 700 C 690 560, 760 510, 840 420 C 910 340, 980 280, 1120 230" stroke="rgba(2,6,23,0.10)" stroke-width="40" stroke-linecap="round"/>
+  <path d="M650 700 C 690 560, 760 510, 840 420 C 910 340, 980 280, 1120 230" stroke="#ffffff" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="280" cy="200" r="54" fill="rgba(37,140,212,0.14)"/>
+  <circle cx="360" cy="230" r="34" fill="rgba(99,59,159,0.12)"/>
+  <circle cx="240" cy="250" r="30" fill="rgba(237,27,56,0.10)"/>
+</svg>

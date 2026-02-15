@@ -92,7 +92,7 @@ a {
 
 .topbar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
@@ -109,20 +109,20 @@ a {
 
 .brand {
   display: flex;
-  gap: 12px;
   align-items: center;
   min-width: 0;
   flex: 1 1 auto;
 }
 
 .brandLogo {
-  width: 140px;
-  height: 44px;
+  width: 260px;
+  height: 72px;
   border-radius: 12px;
   background: transparent;
   border: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   text-decoration: none;
 }
@@ -130,6 +130,7 @@ a {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center center;
   display: block;
 }
 .brandLogo:focus-visible {
@@ -137,34 +138,14 @@ a {
   outline-offset: 2px;
 }
 
-.brandText {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-.brandTitle {
-  font-weight: 750;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.brandSubtitle {
-  font-size: 13px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .actions {
   display: flex;
   gap: 8px;
   flex-direction: column;
   align-items: flex-end;
-  justify-content: flex-start;
+  justify-content: center;
   margin-left: auto;
-  align-self: flex-start;
+  align-self: center;
 }
 
 .btn {
@@ -224,6 +205,98 @@ a {
   margin: 10px 0 0;
   color: var(--muted);
   line-height: 1.4;
+}
+
+.heroCarousel {
+  margin-top: 18px;
+}
+
+.heroViewport {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.heroTrack {
+  display: flex;
+  width: 100%;
+  transform: translateX(0);
+}
+
+.heroSlide {
+  flex: 0 0 100%;
+  padding: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.75)),
+    var(--hero-bg);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  min-height: 220px;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(237, 27, 56, 0.72), rgba(237, 27, 56, 0.28) 55%, rgba(237, 27, 56, 0.08));
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.heroKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.10);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  font-size: 12px;
+}
+
+.heroCarousel h1 {
+  margin: 10px 0 0;
+  font-size: clamp(22px, 4vw, 34px);
+  letter-spacing: -0.03em;
+}
+
+.heroLead {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+}
+
+.heroBullets {
+  margin: 12px 0 0;
+  padding: 0 0 0 16px;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.35;
+}
+
+.heroInfo {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.heroDots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .winners {
