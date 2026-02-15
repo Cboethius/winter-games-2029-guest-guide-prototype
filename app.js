@@ -420,10 +420,10 @@ function renderHome({ selectedLocationId, focus }) {
     </section>
   `;
 
-  // Hero backgrounds: images from Special Olympics World Winter Games 2029 (switzerland2029.ch)
-  const heroBg1 = 'https://switzerland2029.ch/wp-content/uploads/2025/06/snow-shoeing-low_nicolas-belle-scaled.jpg';
-  const heroBg2 = 'https://switzerland2029.ch/wp-content/uploads/2026/01/titelbild-homepage-einladung.jpg';
-  const heroBg3 = 'https://switzerland2029.ch/wp-content/uploads/2025/11/smswwg29n25-11-1-scaled.jpg';
+  // Hero backgrounds: local assets (Unsplash + Pexels, free to use)
+  const heroBg1 = './assets/hero-1.jpg';
+  const heroBg2 = './assets/hero-2.jpg';
+  const heroBg3 = './assets/hero-3.jpg';
 
   const heroSlides = `
     <div class="heroTrack" data-hero-track aria-label="Guest guide highlights slider">
