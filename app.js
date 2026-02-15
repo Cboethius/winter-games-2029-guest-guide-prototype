@@ -263,7 +263,7 @@ function renderHome({ selectedLocationId, focus }) {
 
   const locationCards = LOCATIONS.map((loc) => {
     return `
-      <article class="card" aria-label="${escapeHtml(loc.name)} card">
+      <article class="card card--${escapeHtml(loc.id)}" aria-label="${escapeHtml(loc.name)} card">
         <div class="cardBody">
           <div class="cardTitle">
             <h2>${escapeHtml(loc.name)}</h2>
@@ -284,7 +284,7 @@ function renderHome({ selectedLocationId, focus }) {
   }).join("");
 
   const programCard = `
-    <article class="card" aria-label="Program card">
+    <article class="card card--program" aria-label="Program card">
       <div class="cardBody">
         <div class="cardTitle">
           <h2>Program</h2>
@@ -309,7 +309,7 @@ function renderHome({ selectedLocationId, focus }) {
   const disciplineCount = new Set((ATHLETES || []).map((a) => a.sport)).size;
 
   const allAthletesCard = `
-    <article class="card" aria-label="All athletes card">
+    <article class="card card--athletes" aria-label="All athletes card">
       <div class="cardBody">
         <div class="cardTitle">
           <h2>All Athletes</h2>
@@ -331,7 +331,7 @@ function renderHome({ selectedLocationId, focus }) {
   `;
 
   const disabilitiesCard = `
-    <article class="card" aria-label="Disabilities card">
+    <article class="card card--disabilities" aria-label="Disabilities card">
       <div class="cardBody">
         <div class="cardTitle">
           <h2>Disabilities</h2>

@@ -11,6 +11,9 @@
   --accentBlue: #258cd4;
   --accentPurple: #633b9f;
   --accentRed: #ed1b38;
+  --accentYellow: #fbc817;
+  --accentGreen: #26b36f;
+  --accentPink: #de1c98;
 
   --accent: var(--accentBlue);
   --danger: var(--accentRed);
@@ -454,6 +457,32 @@ a {
   background: color-mix(in oklab, var(--panelSolid) 86%, transparent);
   box-shadow: var(--shadow);
   overflow: hidden;
+}
+
+/* Section card backgrounds from logo palette */
+.card--chur {
+  background: color-mix(in oklab, var(--panelSolid) 88%, var(--accentBlue) 12%);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--accentBlue) 40%);
+}
+.card--arosa {
+  background: color-mix(in oklab, var(--panelSolid) 88%, var(--accentRed) 12%);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--accentRed) 40%);
+}
+.card--lenzerheide {
+  background: color-mix(in oklab, var(--panelSolid) 88%, var(--accentGreen) 12%);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--accentGreen) 40%);
+}
+.card--program {
+  background: color-mix(in oklab, var(--panelSolid) 88%, var(--accentYellow) 12%);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--accentYellow) 40%);
+}
+.card--athletes {
+  background: color-mix(in oklab, var(--panelSolid) 88%, var(--accentPurple) 12%);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--accentPurple) 40%);
+}
+.card--disabilities {
+  background: color-mix(in oklab, var(--panelSolid) 88%, var(--accentPink) 12%);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--accentPink) 40%);
 }
 
 .cardBody {
