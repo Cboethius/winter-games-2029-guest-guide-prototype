@@ -364,50 +364,36 @@ function renderHome({ selectedLocationId, focus }) {
   })();
 
   const winnersSlider = `
-    <section class="winners" aria-label="Live medal highlights (prototype)">
+    <section class="winners" aria-label="Live news feed (prototype)">
       <div class="winnersHeader">
-        <strong>Live medalists</strong>
-        <span class="badge">Prototype</span>
+        <strong>Live news</strong>
+        <span class="badge">Updates</span>
       </div>
-      <div class="winnersViewport" aria-label="Medalist slider">
+      <div class="winnersViewport" aria-label="News feed slider">
         <div class="winnersTrack" data-winners-track>
           <div class="winnersSlide">
-            <div class="winnerCard winnerGold">
-              <img class="winnerImg" src="./assets/athlete-placeholder.svg" alt="Athlete photo placeholder" />
-              <div class="winnerMeta">
-                <div class="winnerTop">
-                  <span class="winnerMedal">Gold</span>
-                  <span class="winnerIcon" aria-hidden="true">${icon("medal")}</span>
-                </div>
-                <div class="winnerName">Alex Winter</div>
-                <div class="winnerSub">Alpine skiing • Switzerland (placeholder)</div>
-              </div>
+            <div class="newsCard newsCard--1">
+              <p class="newsText">Sam Glacier has won gold in cross-country skiing.</p>
             </div>
           </div>
           <div class="winnersSlide">
-            <div class="winnerCard winnerSilver">
-              <img class="winnerImg" src="./assets/athlete-placeholder.svg" alt="Athlete photo placeholder" />
-              <div class="winnerMeta">
-                <div class="winnerTop">
-                  <span class="winnerMedal">Silver</span>
-                  <span class="winnerIcon" aria-hidden="true">${icon("medal")}</span>
-                </div>
-                <div class="winnerName">Jamie Frost</div>
-                <div class="winnerSub">Short track • Canada (placeholder)</div>
-              </div>
+            <div class="newsCard newsCard--2">
+              <p class="newsText">Program schedule for the next dance competition in Lenzerheide is now available.</p>
             </div>
           </div>
           <div class="winnersSlide">
-            <div class="winnerCard winnerBronze">
-              <img class="winnerImg" src="./assets/athlete-placeholder.svg" alt="Athlete photo placeholder" />
-              <div class="winnerMeta">
-                <div class="winnerTop">
-                  <span class="winnerMedal">Bronze</span>
-                  <span class="winnerIcon" aria-hidden="true">${icon("medal")}</span>
-                </div>
-                <div class="winnerName">Sam Glacier</div>
-                <div class="winnerSub">Cross-country skiing • Sweden (placeholder)</div>
-              </div>
+            <div class="newsCard newsCard--3">
+              <p class="newsText">Alex Winter has won silver in alpine skiing.</p>
+            </div>
+          </div>
+          <div class="winnersSlide">
+            <div class="newsCard newsCard--4">
+              <p class="newsText">Figure skating finals in Chur begin tomorrow.</p>
+            </div>
+          </div>
+          <div class="winnersSlide">
+            <div class="newsCard newsCard--5">
+              <p class="newsText">Snowboarding qualifiers in Arosa wrapped today.</p>
             </div>
           </div>
         </div>
@@ -416,6 +402,8 @@ function renderHome({ selectedLocationId, focus }) {
         <span class="dot" data-winners-dot="0" aria-hidden="true"></span>
         <span class="dot" data-winners-dot="1" aria-hidden="true"></span>
         <span class="dot" data-winners-dot="2" aria-hidden="true"></span>
+        <span class="dot" data-winners-dot="3" aria-hidden="true"></span>
+        <span class="dot" data-winners-dot="4" aria-hidden="true"></span>
       </div>
     </section>
   `;
