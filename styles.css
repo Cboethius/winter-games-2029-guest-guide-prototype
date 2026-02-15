@@ -431,6 +431,13 @@ a {
   }
 }
 
+@media (max-width: 455px) {
+  .brandLogo {
+    width: 180px;
+    height: 50px;
+  }
+}
+
 .grid {
   margin-top: 14px;
   display: grid;
